@@ -1,1 +1,1 @@
-# clean_image_data
+# Remove similar looking images during data collection
