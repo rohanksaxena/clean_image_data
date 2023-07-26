@@ -1,2 +1,3 @@
 pathlib
 imutils
+opencv-python

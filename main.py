@@ -4,8 +4,9 @@ import argparse
 from pathlib import Path
 from imaging_interview import preprocess_image_change_detection, compare_frames_change_detection
 
-SINGLE_AREA_THRESHOLD = 1000
+MIN_CONTOUR_AREA = 1000
 TOTAL_SCORE_THRESHOLD = 30000
+RESOLUTION = (480, 640)
 
 
 def get_image_data(data_root):
@@ -42,8 +43,10 @@ def remove_similar_images(image_data):
     Returns:
         list: A list of paths to the images that were removed during the process.
     """
+    # Set to keep track of images to be removed
     removed_images = set()
 
+    # Loop through individual image lists per camera
     for key, val in image_data.items():
 
         # First Pass
@@ -51,12 +54,12 @@ def remove_similar_images(image_data):
         while j < len(val):
             if val[i] not in removed_images:
                 try:
-                    img1 = preprocess_image_change_detection(cv2.resize(cv2.imread(str(val[i])), (480, 640)))
-                    img2 = preprocess_image_change_detection(cv2.resize(cv2.imread(str(val[j])), (480, 640)))
+                    img1 = preprocess_image_change_detection(cv2.resize(cv2.imread(str(val[i])), RESOLUTION))
+                    img2 = preprocess_image_change_detection(cv2.resize(cv2.imread(str(val[j])), RESOLUTION))
                 except cv2.error:
                     i, j = j, j + 1
                     continue
-                score, res_cnts, thresh = compare_frames_change_detection(img1, img2, 1000)
+                score, res_cnts, thresh = compare_frames_change_detection(img1, img2, MIN_CONTOUR_AREA)
 
                 if score < TOTAL_SCORE_THRESHOLD:
                     removed_images.add(val[j])
@@ -68,7 +71,7 @@ def remove_similar_images(image_data):
         for i in range(len(val)):
             if val[i] not in removed_images:
                 try:
-                    img1 = preprocess_image_change_detection(cv2.resize(cv2.imread(str(val[i])), (480, 640)))
+                    img1 = preprocess_image_change_detection(cv2.resize(cv2.imread(str(val[i])), RESOLUTION))
                 except cv2.error:
                     continue
             else:
@@ -76,10 +79,10 @@ def remove_similar_images(image_data):
             for j in range(i + 1, len(val)):
                 if val[j] not in removed_images:
                     try:
-                        img2 = preprocess_image_change_detection(cv2.resize(cv2.imread(str(val[j])), (480, 640)))
+                        img2 = preprocess_image_change_detection(cv2.resize(cv2.imread(str(val[j])), RESOLUTION))
                     except cv2.error:
                         continue
-                    score, res_cnts, thresh = compare_frames_change_detection(img1, img2, 1000)
+                    score, res_cnts, thresh = compare_frames_change_detection(img1, img2, MIN_CONTOUR_AREA)
                     if score < TOTAL_SCORE_THRESHOLD:
                         removed_images.add(val[j])
                 else:
