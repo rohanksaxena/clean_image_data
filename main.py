@@ -43,13 +43,13 @@ def remove_similar_images(image_data):
     Returns:
         list: A list of paths to the images that were removed during the process.
     """
-    # Set to keep track of images to be removed
+    # Set to keep track of images to be removed, O(1) lookup time on average
     removed_images = set()
 
     # Loop through individual image lists per camera
     for key, val in image_data.items():
 
-        # First Pass
+        # First Pass: Two pointer approach
         i, j = 0, 1
         while j < len(val):
             if val[i] not in removed_images:
@@ -67,7 +67,7 @@ def remove_similar_images(image_data):
                 else:
                     i, j = j, j + 1
 
-        # Second pass
+        # Second pass: brute force pairwise comparison
         for i in range(len(val)):
             if val[i] not in removed_images:
                 try:
